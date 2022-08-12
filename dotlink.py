@@ -39,6 +39,62 @@ def link(src: str, dst: str, is_force: bool) -> None:
     os.symlink(src, dst)
 
 
+def link_package(
+        package_name: str,
+        package_base: str,
+        base_dir: str,
+        is_dry_run: bool,
+        is_force: bool,
+        do_remove: bool,
+    ) -> None:
+
+    package_path = os.path.join(package_base, package_name)
+    package_path = package_path.removesuffix('/')
+
+    for path in (package_base, base_dir, package_path):
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Path doesn't exists: '{path}'")
+
+    link_maps = []
+
+    for dir_path, dir_paths, file_names in os.walk(package_path):
+        if len(file_names) == 0:
+            continue
+
+        content_path = dir_path[len(package_path) + 1:]
+
+        dest_path = os.path.join(
+            base_dir,
+            content_path
+        ) if len(content_path) > 0 else base_dir
+
+        if not os.path.exists(dest_path):
+            os.makedirs(dest_path)
+
+        for file_name in file_names:
+            link_maps.append({
+                "src": os.path.join(dir_path, file_name),
+                "dst": os.path.join(dest_path, file_name)
+            })
+
+    # pprint.pprint(link_maps)
+
+    action_fnc: ActionFnc
+    if do_remove:
+        action_fnc = lambda src, dst: remove(dst)
+        action_fnc = action_fnc        \
+                     if not is_dry_run \
+                     else lambda src, dst: print(f"removing: {dst}")
+    else:
+        action_fnc = lambda src, dst: link(src, dst, is_force)
+        action_fnc = action_fnc        \
+                     if not is_dry_run \
+                     else lambda src, dst: print(f"linking: {src} -> {dst}")
+
+
+    for link_map in link_maps:
+        action_fnc(**link_map)
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("package")
@@ -89,55 +145,14 @@ def main() -> int:
     if link_dirs:
         raise NotImplementedError
 
-
-    package_path = os.path.join(package_base, package_name)
-    package_path = package_path.removesuffix('/')
-
-    for path in (package_base, base_dir, package_path):
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"Path doesn't exists: '{path}'")
-
-
-    link_maps = []
-
-
-    for dir_path, dir_paths, file_names in os.walk(package_path):
-        if len(file_names) == 0:
-            continue
-
-        content_path = dir_path[len(package_path) + 1:]
-
-        dest_path = os.path.join(
-            base_dir,
-            content_path
-        ) if len(content_path) > 0 else base_dir
-
-        if not os.path.exists(dest_path):
-            os.makedirs(dest_path)
-
-        for file_name in file_names:
-            link_maps.append({
-                "src": os.path.join(dir_path, file_name),
-                "dst": os.path.join(dest_path, file_name)
-            })
-
-    # pprint.pprint(link_maps)
-
-    action_fnc: ActionFnc
-    if do_remove:
-        action_fnc = lambda src, dst: remove(dst)
-        action_fnc = action_fnc        \
-                     if not is_dry_run \
-                     else lambda src, dst: print(f"removing: {dst}")
-    else:
-        action_fnc = lambda src, dst: link(src, dst, is_force)
-        action_fnc = action_fnc        \
-                     if not is_dry_run \
-                     else lambda src, dst: print(f"linking: {src} -> {dst}")
-
-
-    for link_map in link_maps:
-        action_fnc(**link_map)
+    link_package(
+        package_name,
+        package_base,
+        base_dir,
+        is_dry_run,
+        is_force,
+        do_remove
+    )
 
     return 0
 

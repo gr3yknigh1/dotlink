@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+Stow analog which written in python
+
+TODO:
+    - [ ] Add config file support
+    - [ ] Add option for linking directories
+    - [ ] Add support for package mapping
+"""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

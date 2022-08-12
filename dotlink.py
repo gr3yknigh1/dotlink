@@ -98,11 +98,16 @@ def link_package(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("package")
-    parser.add_argument("-b", "--base-dir", default=HOME_DIR, dest="base_dir")
+    parser.add_argument(
+        "-b",
+        default=HOME_DIR,
+        dest="base_dir",
+        help="Package name"
+    )
     parser.add_argument(
         "-p",
-        "--pkg-base",
-        default=DOTFILES, dest="package_base"
+        default=DOTFILES, dest="package_base",
+        help="Path which used for package lookup"
     )
     parser.add_argument(
         "--link-dirs",
@@ -112,24 +117,24 @@ def main() -> int:
     )
     parser.add_argument(
         "-n",
-        "--dry-run",
         action="store_true",
         dest="is_dry_run",
-        default=False
+        default=False,
+        help="Instead of doing something, just print which actions will be executed"
     )
     parser.add_argument(
         "-R",
-        "--remove",
         action="store_true",
         dest="do_remove",
-        default=False
+        default=False,
+        help="Remove package's links"
     )
     parser.add_argument(
         "-f",
-        "--force",
         action="store_true",
         dest="is_force",
-        default=False
+        default=False,
+        help="Relink package If package already linked"
     )
 
     args = parser.parse_args()

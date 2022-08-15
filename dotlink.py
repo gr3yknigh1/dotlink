@@ -4,7 +4,7 @@ Stow analog which written in python
 
 TODO:
     - [ ] Add config file support
-    - [ ] Add option for linking directories
+    - [X] Add option for linking directories
     - [ ] Add support for package mapping
 """
 from __future__ import annotations
@@ -21,21 +21,25 @@ import argparse
 
 HOME_DIR = os.path.expanduser("~")
 DOTFILES = os.path.join(HOME_DIR, ".dotfiles")
+DOTFOLDERNAME = ".dotfolder"
 
 
-def remove(target: str, is_not_link_ok = True) -> None:
+def remove_link(target: str) -> None:
     if not os.path.islink(target):
-        if not is_not_link_ok:
-            raise TypeError("Target must be link")
-        return
-    os.remove(target)
+        raise TypeError("Target must be link")
+    os.unlink(target)
 
 
 def link(src: str, dst: str, is_force: bool) -> None:
     if os.path.exists(dst):
         if not is_force:
-            raise FileExistsError(f"File already exists: '{dst}'")
-        remove(dst)
+            raise Exception(f"Path already exists: '{dst}'")
+
+        if os.path.isdir(dst):
+            os.rmdir(dst)
+        else:
+            os.remove(dst)
+
     os.symlink(src, dst)
 
 
@@ -61,6 +65,7 @@ def link_package(
         if len(file_names) == 0:
             continue
 
+
         content_path = dir_path[len(package_path) + 1:]
 
         dest_path = os.path.join(
@@ -70,6 +75,13 @@ def link_package(
 
         if not os.path.exists(dest_path):
             os.makedirs(dest_path)
+
+        if DOTFOLDERNAME in file_names:
+            link_maps.append({
+                "src": dir_path,
+                "dst": dest_path
+            })
+            continue
 
         for file_name in file_names:
             link_maps.append({
@@ -81,7 +93,7 @@ def link_package(
 
     action_fnc: ActionFnc
     if do_remove:
-        action_fnc = lambda src, dst: remove(dst)
+        action_fnc = lambda src, dst: remove_link(dst)
         action_fnc = action_fnc        \
                      if not is_dry_run \
                      else lambda src, dst: print(f"removing: {dst}")
@@ -110,12 +122,6 @@ def main() -> int:
         help="Path which used for package lookup"
     )
     parser.add_argument(
-        "--link-dirs",
-        action="store_true",
-        dest="link_dirs",
-        default=False
-    )
-    parser.add_argument(
         "-n",
         action="store_true",
         dest="is_dry_run",
@@ -142,13 +148,9 @@ def main() -> int:
     package_name = args.package
     package_base = args.package_base
     base_dir = args.base_dir
-    link_dirs = args.link_dirs
     is_dry_run = args.is_dry_run
     do_remove = args.do_remove
     is_force = args.is_force
-
-    if link_dirs:
-        raise NotImplementedError
 
     link_package(
         package_name,

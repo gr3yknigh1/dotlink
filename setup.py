@@ -13,7 +13,7 @@ def get_file_lines(file_path: str) -> list[str]:
 
 setuptools.setup(
     name="dotlink",
-    version="0.1",
+    version="0.2",
 
     author="Akkuzin Ilya",
     author_email="gr3yknigh1@gmail.com",

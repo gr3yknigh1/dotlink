@@ -114,7 +114,7 @@ def main() -> int:
         "-b",
         default=HOME_DIR,
         dest="base_dir",
-        help="Package name"
+        help="Directory where will be placed all packages"
     )
     parser.add_argument(
         "-p",

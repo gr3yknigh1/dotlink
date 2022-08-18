@@ -93,6 +93,9 @@ def link_package(
         if len(dotfolder_paths) > 0 and dest_path.removeprefix(dotfolder_paths[-1]) != dest_path:
             continue
 
+        if not os.path.exists(dest_path):
+            os.makedirs(dest_path)
+
         for file_name in file_names:
             links.append(Link(
                 src=os.path.join(dir_path, file_name),
@@ -113,7 +116,7 @@ def link_package(
                      else lambda src, dst: print(f"linking: {src} -> {dst}")
 
 
-    for link_map in links:
+    for link_map in links[::-1]:
         action_fnc(link_map.src, link_map.dst)
 
 def main() -> int:

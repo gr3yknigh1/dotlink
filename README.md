@@ -38,13 +38,13 @@ options:
   -f               Relink package If package already linked
 ```
 
-Link package:
+*Link package*:
 
 ```shell
 dotlink <package-name>
 ```
 
-Remove package:
+*Remove package*:
 
 `dotlink` by default will be try to search for packages in `~/.dotfiles`.
 
@@ -56,13 +56,13 @@ Override default package path:
 dotlink -p <path-to-pkgs> <package-name>
 ```
 
-Override default base path:
+*Override default base path*:
 
 ```shell
 dotlink -b <path-to-base> <package-name>
 ```
 
-For dry run add `-n` or `--dry-run` flag:
+For *dry run* add `-n` or `--dry-run` flag:
 
 ```
 dotlink -n <package-name>

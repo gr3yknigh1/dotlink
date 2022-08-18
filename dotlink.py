@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from typing import Callable
     from typing import TypeAlias
 
-    ActionFnc: TypeAlias = Callable[[str, str], None]
+    Action: TypeAlias = Callable[[Link], None]
 import pprint
 import os
 import os.path
@@ -36,23 +36,21 @@ class Link:
     src: str
 
 
-def remove_link(target: str) -> None:
-    if not os.path.islink(target):
-        raise TypeError("Target must be link")
-    os.unlink(target)
-
-
-def link(src: str, dst: str, is_force: bool) -> None:
-    if os.path.exists(dst):
+def make_link(link: Link, is_force: bool) -> None:
+    if os.path.exists(link.dst):
         if not is_force:
-            raise Exception(f"Path already exists: '{dst}'")
+            raise Exception(f"Path already exists: '{link.dst}'")
 
-        if os.path.isdir(dst):
-            os.rmdir(dst)
+        if os.path.isdir(link.dst):
+            os.rmdir(link.dst)
         else:
-            os.remove(dst)
+            os.remove(link.dst)
 
-    os.symlink(src, dst)
+    os.symlink(link.src, link.dst)
+
+
+def process_link(link: Link, action: Action) -> None:
+    action(link)
 
 
 def link_package(
@@ -77,15 +75,11 @@ def link_package(
 
     for dir_path, dir_paths, file_names in os.walk(package_path):
 
-        print(dir_path, dir_paths, file_names)
-
         content_path = dir_path[len(package_path) + 1 :]
 
         dest_path = (
             os.path.join(base_dir, content_path) if len(content_path) > 0 else base_dir
         )
-
-        print(f"{content_path=}  {dest_path=}")
 
         if DOTFOLDERNAME in file_names:
             dotfolder_paths.append(dest_path)
@@ -108,22 +102,22 @@ def link_package(
                 )
             )
 
-    action_fnc: ActionFnc
-    if do_remove:
-        action_fnc = lambda src, dst: remove_link(dst)
-        action_fnc = (
-            action_fnc if not is_dry_run else lambda src, dst: print(f"removing: {dst}")
-        )
-    else:
-        action_fnc = lambda src, dst: link(src, dst, is_force)
-        action_fnc = (
-            action_fnc
-            if not is_dry_run
-            else lambda src, dst: print(f"linking: {src} -> {dst}")
-        )
 
-    for link_map in links[::-1]:
-        action_fnc(link_map.src, link_map.dst)
+    action: Action
+
+    if do_remove:
+        if is_dry_run:
+            action = lambda link: print(f"removing: {link.dst}")
+        else:
+            action = lambda link: os.unlink(link.dst)
+    else:
+        if is_dry_run:
+            action = lambda link: print(f"linking: {link.src} -> {link.dst}")
+        else:
+            action = lambda link: make_link(link, is_force)
+
+    for link in links[::-1]:
+        process_link(link, action)
 
 
 def main() -> int:

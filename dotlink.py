@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     from typing import TypeAlias
 
     Action: TypeAlias = Callable[[Link], None]
-import pprint
 import os
 import os.path
 import argparse
@@ -75,10 +74,13 @@ def link_package(
 
     for dir_path, dir_paths, file_names in os.walk(package_path):
 
-        content_path = dir_path[len(package_path) + 1 :]
+        content_path = dir_path[len(package_path) + 1:]
 
         dest_path = (
-            os.path.join(base_dir, content_path) if len(content_path) > 0 else base_dir
+            os.path.join(
+                base_dir,
+                content_path
+            ) if len(content_path) > 0 else base_dir
         )
 
         if DOTFOLDERNAME in file_names:
@@ -101,7 +103,6 @@ def link_package(
                     dst=os.path.join(dest_path, file_name),
                 )
             )
-
 
     action: Action
 
@@ -140,7 +141,8 @@ def main() -> int:
         action="store_true",
         dest="is_dry_run",
         default=False,
-        help="Instead of doing something, just print which actions will be executed",
+        help="Instead of doing something, \
+                just print which actions will be executed",
     )
     parser.add_argument(
         "-R",

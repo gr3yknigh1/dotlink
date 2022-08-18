@@ -9,9 +9,11 @@ TODO:
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from typing import Callable
     from typing import TypeAlias
+
     ActionFnc: TypeAlias = Callable[[str, str], None]
 import pprint
 import os
@@ -63,7 +65,7 @@ def link_package(
 ) -> None:
 
     package_path = os.path.join(package_base, package_name)
-    package_path = package_path.removesuffix('/')
+    package_path = package_path.removesuffix("/")
 
     for path in (package_base, base_dir, package_path):
         if not os.path.exists(path):
@@ -77,12 +79,11 @@ def link_package(
 
         print(dir_path, dir_paths, file_names)
 
-        content_path = dir_path[len(package_path) + 1:]
+        content_path = dir_path[len(package_path) + 1 :]
 
-        dest_path = os.path.join(
-            base_dir,
-            content_path
-        ) if len(content_path) > 0 else base_dir
+        dest_path = (
+            os.path.join(base_dir, content_path) if len(content_path) > 0 else base_dir
+        )
 
         print(f"{content_path=}  {dest_path=}")
 
@@ -90,34 +91,40 @@ def link_package(
             dotfolder_paths.append(dest_path)
             links.append(Link(dest_path, dir_path))
 
-        if len(dotfolder_paths) > 0 and dest_path.removeprefix(dotfolder_paths[-1]) != dest_path:
+        if (
+            len(dotfolder_paths) > 0
+            and dest_path.removeprefix(dotfolder_paths[-1]) != dest_path
+        ):
             continue
 
         if not os.path.exists(dest_path):
             os.makedirs(dest_path)
 
         for file_name in file_names:
-            links.append(Link(
-                src=os.path.join(dir_path, file_name),
-                dst=os.path.join(dest_path, file_name)
-            ))
-
+            links.append(
+                Link(
+                    src=os.path.join(dir_path, file_name),
+                    dst=os.path.join(dest_path, file_name),
+                )
+            )
 
     action_fnc: ActionFnc
     if do_remove:
         action_fnc = lambda src, dst: remove_link(dst)
-        action_fnc = action_fnc        \
-                     if not is_dry_run \
-                     else lambda src, dst: print(f"removing: {dst}")
+        action_fnc = (
+            action_fnc if not is_dry_run else lambda src, dst: print(f"removing: {dst}")
+        )
     else:
         action_fnc = lambda src, dst: link(src, dst, is_force)
-        action_fnc = action_fnc        \
-                     if not is_dry_run \
-                     else lambda src, dst: print(f"linking: {src} -> {dst}")
-
+        action_fnc = (
+            action_fnc
+            if not is_dry_run
+            else lambda src, dst: print(f"linking: {src} -> {dst}")
+        )
 
     for link_map in links[::-1]:
         action_fnc(link_map.src, link_map.dst)
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -126,33 +133,34 @@ def main() -> int:
         "-b",
         default=HOME_DIR,
         dest="base_dir",
-        help="Directory where will be placed all packages"
+        help="Directory where will be placed all packages",
     )
     parser.add_argument(
         "-p",
-        default=DOTFILES, dest="package_base",
-        help="Path which used for package lookup"
+        default=DOTFILES,
+        dest="package_base",
+        help="Path which used for package lookup",
     )
     parser.add_argument(
         "-n",
         action="store_true",
         dest="is_dry_run",
         default=False,
-        help="Instead of doing something, just print which actions will be executed"
+        help="Instead of doing something, just print which actions will be executed",
     )
     parser.add_argument(
         "-R",
         action="store_true",
         dest="do_remove",
         default=False,
-        help="Remove package's links"
+        help="Remove package's links",
     )
     parser.add_argument(
         "-f",
         action="store_true",
         dest="is_force",
         default=False,
-        help="Relink package If package already linked"
+        help="Relink package If package already linked",
     )
 
     args = parser.parse_args()
@@ -170,7 +178,7 @@ def main() -> int:
         base_dir=base_dir,
         is_dry_run=is_dry_run,
         is_force=is_force,
-        do_remove=do_remove
+        do_remove=do_remove,
     )
 
     return 0

@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os.path
 import setuptools
+import dotlink
 
 
 def get_file_lines(file_path: str) -> list[str]:
@@ -13,7 +14,7 @@ def get_file_lines(file_path: str) -> list[str]:
 
 setuptools.setup(
     name="dotlink",
-    version="0.2",
+    version=dotlink.__version__,
 
     author="Akkuzin Ilya",
     author_email="gr3yknigh1@gmail.com",

@@ -17,11 +17,21 @@ import pprint
 import os
 import os.path
 import argparse
+import dataclasses
+
+
+__version__ = "0.3"
 
 
 HOME_DIR = os.path.expanduser("~")
 DOTFILES = os.path.join(HOME_DIR, ".dotfiles")
 DOTFOLDERNAME = ".dotfolder"
+
+
+@dataclasses.dataclass
+class Link:
+    dst: str
+    src: str
 
 
 def remove_link(target: str) -> None:
@@ -44,13 +54,13 @@ def link(src: str, dst: str, is_force: bool) -> None:
 
 
 def link_package(
-        package_name: str,
-        package_base: str,
-        base_dir: str,
-        is_dry_run: bool,
-        is_force: bool,
-        do_remove: bool,
-    ) -> None:
+    package_name: str,
+    package_base: str,
+    base_dir: str,
+    is_dry_run: bool,
+    is_force: bool,
+    do_remove: bool,
+) -> None:
 
     package_path = os.path.join(package_base, package_name)
     package_path = package_path.removesuffix('/')
@@ -59,12 +69,13 @@ def link_package(
         if not os.path.exists(path):
             raise FileNotFoundError(f"Path doesn't exists: '{path}'")
 
-    link_maps = []
+    links: list[Link] = []
+
+    dotfolder_paths: list[str] = []
 
     for dir_path, dir_paths, file_names in os.walk(package_path):
-        if len(file_names) == 0:
-            continue
 
+        print(dir_path, dir_paths, file_names)
 
         content_path = dir_path[len(package_path) + 1:]
 
@@ -73,23 +84,21 @@ def link_package(
             content_path
         ) if len(content_path) > 0 else base_dir
 
-        if not os.path.exists(dest_path):
-            os.makedirs(dest_path)
+        print(f"{content_path=}  {dest_path=}")
 
         if DOTFOLDERNAME in file_names:
-            link_maps.append({
-                "src": dir_path,
-                "dst": dest_path
-            })
+            dotfolder_paths.append(dest_path)
+            links.append(Link(dest_path, dir_path))
+
+        if len(dotfolder_paths) > 0 and dest_path.removeprefix(dotfolder_paths[-1]) != dest_path:
             continue
 
         for file_name in file_names:
-            link_maps.append({
-                "src": os.path.join(dir_path, file_name),
-                "dst": os.path.join(dest_path, file_name)
-            })
+            links.append(Link(
+                src=os.path.join(dir_path, file_name),
+                dst=os.path.join(dest_path, file_name)
+            ))
 
-    # pprint.pprint(link_maps)
 
     action_fnc: ActionFnc
     if do_remove:
@@ -104,8 +113,8 @@ def link_package(
                      else lambda src, dst: print(f"linking: {src} -> {dst}")
 
 
-    for link_map in link_maps:
-        action_fnc(**link_map)
+    for link_map in links:
+        action_fnc(link_map.src, link_map.dst)
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -153,12 +162,12 @@ def main() -> int:
     is_force = args.is_force
 
     link_package(
-        package_name,
-        package_base,
-        base_dir,
-        is_dry_run,
-        is_force,
-        do_remove
+        package_name=package_name,
+        package_base=package_base,
+        base_dir=base_dir,
+        is_dry_run=is_dry_run,
+        is_force=is_force,
+        do_remove=do_remove
     )
 
     return 0

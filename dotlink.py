@@ -72,7 +72,7 @@ def link_package(
 
     dotfolder_paths: list[str] = []
 
-    for dir_path, dir_paths, file_names in os.walk(package_path):
+    for dir_path, _, file_names in os.walk(package_path):
 
         content_path = dir_path[len(package_path) + 1:]
 

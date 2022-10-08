@@ -159,20 +159,13 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    package_name = args.package
-    package_base = args.package_base
-    base_dir = args.base_dir
-    is_dry_run = args.is_dry_run
-    do_remove = args.do_remove
-    is_force = args.is_force
-
     link_package(
-        package_name=package_name,
-        package_base=package_base,
-        base_dir=base_dir,
-        is_dry_run=is_dry_run,
-        is_force=is_force,
-        do_remove=do_remove,
+        package_name=args.package_name,
+        package_base=args.package_base,
+        base_dir=args.base_dir,
+        is_dry_run=args.is_dry_run,
+        is_force=args.is_force,
+        do_remove=args.do_remove,
     )
 
     return 0

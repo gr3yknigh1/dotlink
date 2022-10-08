@@ -20,9 +20,7 @@ import os.path
 import argparse
 import dataclasses
 
-
 __version__ = "0.3"
-
 
 HOME_DIR = os.path.expanduser("~")
 DOTFILES = os.path.join(HOME_DIR, ".dotfiles")

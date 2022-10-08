@@ -24,7 +24,7 @@ __version__ = "0.3"
 
 HOME_DIR = os.path.expanduser("~")
 DOTFILES = os.path.join(HOME_DIR, ".dotfiles")
-DOTFOLDERNAME = ".dotfolder"
+DOTFOLDER_NAME = ".dotfolder"
 
 
 @dataclasses.dataclass
@@ -81,7 +81,7 @@ def link_package(
             ) if len(content_path) > 0 else base_dir
         )
 
-        if DOTFOLDERNAME in file_names:
+        if DOTFOLDER_NAME in file_names:
             dotfolder_paths.append(dest_path)
             links.append(Link(dest_path, dir_path))
 
